@@ -16,13 +16,13 @@ def randomCrop(image):
     minHeight = 0.5
 
     # Make sure you leave enough room to be at least minWidth by minHeight
-    left = int( min(np.random.rand()*image.size[0], image.size[0]*(1-minWidth)) )
-    upper = int( min(np.random.rand()*image.size[1], image.size[1]*(1-minHeight)) )
+    # all the +/- 1 is a quick hack to avoid the random number gen giving 0 and
+    # causing some problems
+    left = int( min(np.random.rand()*image.size[0], image.size[0]*(1-minWidth)) )+1
+    upper = int( min(np.random.rand()*image.size[1], image.size[1]*(1-minHeight)) )+1
 
-    right = left + int( np.random.rand()*(image.size[0]-left) )
-    lower = upper + int( np.random.rand()*(image.size[1]-left) )
-
-    print left,upper,right,lower
+    right = left + int( np.random.rand()*(image.size[0]-1-left) )+1
+    lower = upper + int( np.random.rand()*(image.size[1]-1-left) )+1
 
     return image.crop( (left, upper, right, lower) )
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         for counter in range(numOfChildren):
             # Do at least ONE mutation
             numOfMutations = max(int(np.random.rand()*len(functions)), 1)
-            # print "Doing %d mutations"%numOfMutations
+            print "Doing %d mutations"%numOfMutations
             calls = np.random.choice( functions, numOfMutations)
             nImg = Image.open(f)
             for func in calls:
