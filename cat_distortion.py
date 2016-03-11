@@ -125,7 +125,7 @@ if __name__ == '__main__':
             nImg = Image.open(f)
 
             distorted = CatContortion(nImg)
-            # distorted.random_crop(variance=.5)
+            distorted.random_crop(variance=float(arguments['--cropVariance']))
             distorted.random_resize(variance=float(arguments['--resizeVariance']))
 
             distorted.img().save('images/custom/%s_%s.jpg'%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest()))
