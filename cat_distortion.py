@@ -1,3 +1,19 @@
+
+"""Usage:
+    prog [-h] [ --cropVariance=<cropVariance> --resizeVariance=<resizeVariance> --originalDir=<folder> ] <num_of_children>
+
+Makes several distorted images for every one originial image.
+
+Arguments:
+  <num_of_children>             How many distorted images will be made per original image. [default: 10]
+
+Options:
+  -h --help
+  --cropVariance=<cropVariance>        How extreme the cropping variance is. Set to 0 to disable cropping. [default: 0.5]
+  --resizeVariance=<resizeVariance>  How extreme the resizing will be. Set to 0 to disable resizing. [default: 0.5]
+  --originalDir=<folder>            Location of images to be distorted. [default: images/original/]
+
+"""
 import numpy as np
 
 from glob import glob
@@ -8,6 +24,14 @@ import sys
 
 from hashlib import md5
 from random import choice
+
+from docopt import docopt
+
+
+
+
+
+
 
 
 class CatContortion():
@@ -85,13 +109,15 @@ class CatContortion():
         self.__set_transform(Image.fromarray(arr))
 
 if __name__ == '__main__':
-    num_of_children = 20
 
-    if len(sys.argv) > 1:
-        num_of_children = sys.argv[1]
+    arguments = docopt(__doc__)  # parse arguments based on docstring above
 
+    num_of_children = int(arguments['<num_of_children>'])
     # Get a list of images
-    files = glob('images/original/*')
+    files = glob(os.path.join( arguments['--originalDir'],'/*'))
+
+
+    exit(0)
 
     for f in files:
         print('Opening: ', f)
@@ -99,9 +125,9 @@ if __name__ == '__main__':
             nImg = Image.open(f)
 
             distorted = CatContortion(nImg)
-            distorted.random_crop(variance=.5)
-            distorted.random_resize(variance=.2)
+            # distorted.random_crop(variance=.5)
+            distorted.random_resize(variance=float(arguments['--resizeVariance']))
 
-            distorted.img().save('images/custom/%s_%s.jpg'%( f.split('/')[-1], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest()))
+            distorted.img().save('images/custom/%s_%s.jpg'%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest()))
 
             distorted.reset()
