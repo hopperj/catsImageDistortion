@@ -117,8 +117,6 @@ if __name__ == '__main__':
     files = glob(os.path.join( arguments['--originalDir'],'/*'))
 
 
-    exit(0)
-
     for f in files:
         print('Opening: ', f)
         for counter in range(num_of_children):
