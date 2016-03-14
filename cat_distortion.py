@@ -69,15 +69,6 @@ class CatContortion():
         right = left + int((1 - np.random.rand() * variance) * remaining_width)
         lower = upper + int((1 - np.random.rand() * variance) * remaining_height)
 
-        # right = left + int( 0.5 * remaining_width )
-        # lower = upper + int( 0.5 * remaining_height )
-
-
-
-        # print("\n\n")
-        # print(self.__width,self.__height)
-        # print(left,upper,right,lower)
-        # print(remaining_width, remaining_height)
         self.__set_transform(self.__transform.crop( (left, upper, right, lower) ))
 
 
@@ -130,6 +121,9 @@ if __name__ == '__main__':
     print(arguments['--originalDir'])
     files = glob(os.path.join( arguments['--originalDir'],'*'))
 
+
+
+    # Remove old image files if flagged
     if arguments['-d']:
       print("Removing cropped images ...")
       if( os.path.exists(os.path.join(arguments['--croppedDir'],"*")) ):
@@ -142,6 +136,19 @@ if __name__ == '__main__':
       print("Removing cropped and resized images ...")
       if( os.path.exists(os.path.join(arguments['--croppedResizedDir'],"*")) ):
         os.remove(os.path.join(arguments['--croppedResizedDir'],"*"))
+
+
+    # Create image directories as needed
+    if not os.path.isdir( arguments['--croppedDir'] ):
+      os.mkdir( arguments['--croppedDir'] )
+
+    if not os.path.isdir( arguments['--resizedDir'] ):
+      os.mkdir( arguments['--resizedDir'] )
+
+    if not os.path.isdir( arguments['--croppedResizedDir'] ):
+      os.mkdir( arguments['--croppedResizedDir'] )
+
+
 
     for f in files:
         print('Opening: ', f)
