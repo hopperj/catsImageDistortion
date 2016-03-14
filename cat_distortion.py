@@ -1,6 +1,6 @@
 
 """Usage:
-    prog [-h] [ --cropVariance=<cropVariance> --resizeVariance=<resizeVariance> --originalDir=<folder> ] <num_of_children>
+    prog [-hd] [ --cropVariance=<cropVariance> --resizeVariance=<resizeVariance> ] [ --originalDir=<folder> --croppedDir=<folder>  --resizedDir=<folder> --croppedResizedDir=<folder> ] <num_of_children>
 
 Makes several distorted images for every one originial image.
 
@@ -9,9 +9,13 @@ Arguments:
 
 Options:
   -h --help
-  --cropVariance=<cropVariance>        How extreme the cropping variance is. Set to 0 to disable cropping. [default: 0.5]
+  -d                                   Delete exising distorted images [default: False]
+  --cropVariance=<cropVariance>        How extreme the cropping variance is. Set to 0 to disable cropping. [default: 0.25]
   --resizeVariance=<resizeVariance>  How extreme the resizing will be. Set to 0 to disable resizing. [default: 0.5]
   --originalDir=<folder>            Location of images to be distorted. [default: images/original/]
+  --croppedDir=<folder>            Location of the cropped images to be stored. [default: images/cropped/]
+  --resizedDir=<folder>            Location of resized images to be stored. [default: images/resized/]
+  --croppedResizedDir=<folder>            Location of the cropped and resized images to be stored. [default: images/cropped_resized/]
 
 """
 import numpy as np
@@ -57,7 +61,7 @@ class CatContortion():
         height = self.__height
 
         left = int(width - (1 - np.random.rand() * variance) * width)
-        upper = int(width - (1 - np.random.rand() * variance) * width)
+        upper = int(height - (1 - np.random.rand() * variance) * height)
 
         remaining_width = self.__width - 1 - left
         remaining_height = self.__height - 1 - upper
@@ -65,6 +69,15 @@ class CatContortion():
         right = left + int((1 - np.random.rand() * variance) * remaining_width)
         lower = upper + int((1 - np.random.rand() * variance) * remaining_height)
 
+        # right = left + int( 0.5 * remaining_width )
+        # lower = upper + int( 0.5 * remaining_height )
+
+
+
+        # print("\n\n")
+        # print(self.__width,self.__height)
+        # print(left,upper,right,lower)
+        # print(remaining_width, remaining_height)
         self.__set_transform(self.__transform.crop( (left, upper, right, lower) ))
 
 
@@ -111,11 +124,24 @@ class CatContortion():
 if __name__ == '__main__':
 
     arguments = docopt(__doc__)  # parse arguments based on docstring above
-
+    # print( arguments )
     num_of_children = int(arguments['<num_of_children>'])
     # Get a list of images
-    files = glob(os.path.join( arguments['--originalDir'],'/*'))
+    print(arguments['--originalDir'])
+    files = glob(os.path.join( arguments['--originalDir'],'*'))
 
+    if arguments['-d']:
+      print("Removing cropped images ...")
+      if( os.path.exists(os.path.join(arguments['--croppedDir'],"*")) ):
+        os.remove(os.path.join(arguments['--croppedDir'],"*"))
+
+      print("Removing resized images ...")
+      if( os.path.exists(os.path.join(arguments['--resizedDir'],"*")) ):
+        os.remove(os.path.join(arguments['--resizedDir'],"*"))
+
+      print("Removing cropped and resized images ...")
+      if( os.path.exists(os.path.join(arguments['--croppedResizedDir'],"*")) ):
+        os.remove(os.path.join(arguments['--croppedResizedDir'],"*"))
 
     for f in files:
         print('Opening: ', f)
@@ -124,8 +150,35 @@ if __name__ == '__main__':
 
             distorted = CatContortion(nImg)
             distorted.random_crop(variance=float(arguments['--cropVariance']))
+            # Save the resized image
+            distorted.img().save(
+              os.path.join(
+                arguments['--croppedDir'],
+                "%s_%s.jpg"%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest())
+              )
+            )
+
+
+            # Save an image that has been cropped
+            distorted.reset()
             distorted.random_resize(variance=float(arguments['--resizeVariance']))
 
-            distorted.img().save('images/custom/%s_%s.jpg'%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest()))
+            distorted.img().save(
+              os.path.join(
+                arguments['--resizedDir'],
+                "%s_%s.jpg"%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest())
+              )
+            )
+
+
+            # Save an image that has been cropped and resized
+            distorted.random_crop(variance=float(arguments['--cropVariance']))
+
+            distorted.img().save(
+              os.path.join(
+                arguments['--croppedResizedDir'],
+                "%s_%s.jpg"%( f.split('/')[-1].split('.')[0], md5(str(counter).encode('utf-8') + f.encode('utf-8')).hexdigest())
+              )
+            )
 
             distorted.reset()
